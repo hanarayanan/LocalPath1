@@ -1,0 +1,10 @@
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\NUnitTestSample.dll
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\NUnitTestSample.pdb
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\nunit.framework.dll
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\WindowsServiceBAL.dll
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\WindowsServiceDAO.dll
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\WindowsServiceBAL.pdb
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\bin\Debug\WindowsServiceDAO.pdb
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\obj\Debug\NUnitTestSample.csprojResolveAssemblyReference.cache
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\obj\Debug\NUnitTestSample.dll
+C:\POC\WindowsService-POC\WindowsService3\NUnitTestSample\obj\Debug\NUnitTestSample.pdb

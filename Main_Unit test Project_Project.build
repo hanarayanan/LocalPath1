@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Unit test Project" default="build">
+  <property name="workingDirectory" value="C:\POC\SvnRepocitory\SourceControl\WindowsService3\NUnitTestSample" />
+  <property name="nant.onsuccess" value="success" />
+  <property name="nant.onfailure" value="failure" />
+  <property name="build.tool" value="NAntContrib" />
+  <property name="LogPath" value="fileLogger" />
+  <property name="build.platform" value="AnyCPU" unless="${property::exists('build.platform')}" />
+  <property name="build.configuration" value="Release" unless="${ property::exists('build.configuration')}" />
+  <property name="build.logFilePath" value="${directory::get-current-directory()}\${project::get-name()+'-BuildLog'}" />
+  <property name="build.logFileName" value="${project::get-name()+ 'Build.log'}" />
+  <property name="build.UnitTestCaseResultFileName" value="${project::get-name()+ 'UnitTestCaseResult.xml'}" />
+  <property name="build.UnitTestCaselogFileName" value="${project::get-name()+ 'UnitTestCaseProjectBuild.log'}" />
+  <property name="notification.successemailneeded" value="true" readonly="false" overwrite="true" />
+  <property name="TypeofApplication" value="classlibrary" />
+  <property name="deploy.isdeployneeded" value="true" />
+  <property name="deploy.deployementfolderpath" value="C:\Users\hanarayanan\Desktop\CCNet-Unittets\Log Unit Test case\Deploy-Here" />
+  <property name="deploy.deletecurrentfolder" value="false" />
+  <property name="deploy.createnewfolderanddeploy" value="true" />
+  <property name="unittestcase.needed" value="false" />
+  <property name="deploy.oncheckin" value="ture" readonly="false" overwrite="true" />
+  <property name="MailLogger.failure.notify" value="true" />
+  <property name="MailLogger.success.notify" value="true" />
+  <property name="MailLogger.mailhost" value="smtp.vmware.com" />
+  <property name="MailLogger.from" value="hnarayanan@vmware.com" />
+  <property name="MailLogger.failure.to" value="hanarayanan@deloitte.com" />
+  <property name="MailLogger.failure.attachments" value="MailLogger.failure.files" />
+  <property name="MailLogger.success.attachments" value="MailLogger.success.files" />
+  <property name="MailLogger.mailport" value="25" />
+  <target name="nantcontrib">
+    <loadtasks assembly=" C:\POC\NantContrib\nantcontrib-0.92\bin\NAnt.Contrib.Tasks.dll" />
+  </target>
+  <target name="build" depends="nantcontrib,prepareprojects,buildsolutionrelease,buildUnitTestProject,unittestcase,deploy" />
+  <target name="prepareprojects" depends="clean" />
+  <target name="buildUnitTestProject">
+    <if test="${unittestcase.needed == 'true'}">
+      <echo message="inside build Proejct file" />
+      <if test="${property::exists('unit.test.projectpath')}">
+        <if test="${directory::exists(unit.test.projectpath)}">
+          <if test="${unittestcase.type=='nunit'}">
+            <foreach property="filename" item="File" in="${unit.test.projectpath}">
+              <property name="var1" value="${filename}" />
+              <if test="${build.tool == 'MsBuildDirect'}">
+                <if test="${string::ends-with(var1, 'sln')}">
+                  <echo message="${filename}" />
+                  <echo message="sln building " />
+                  <echo message="${filename} " />
+                  <exec program="${MSBuildPath}">
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=${build.configuration}" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </exec>
+                </if>
+                <if test="${string::ends-with(var1, 'csproj') }">
+                  <exec program="${MSBuildPath}">
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=${build.configuration}" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </exec>
+                </if>
+              </if>
+              <if test="${build.tool != 'MsBuildDirect'}">
+                <echo message="not ms build direct" />
+                <echo message="${filename}" />
+                <if test="${string::ends-with(var1, 'sln') or  string::ends-with(var1, 'csproj')}">
+                  <echo message="${filename}" />
+                  <echo message="inside cs Prof file" />
+                  <msbuild>
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=release" />
+                    <arg value="/t:rebuild" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </msbuild>
+                </if>
+              </if>
+            </foreach>
+          </if>
+          <if test="${unittestcase.type!='nunit'}">
+            <foreach property="filename" item="File" in="${unit.test.projectpath}">
+              <property name="var1" value="${filename}" />
+              <if test="${build.tool == 'MsBuildDirect'}">
+                <if test="${string::ends-with(var1, 'sln') }">
+                  <echo message="${filename}" />
+                  <echo message="sln building " />
+                  <echo message="${filename} " />
+                  <exec program="${MSBuildPath}">
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=${build.configuration}" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </exec>
+                </if>
+                <if test="${string::ends-with(var1, 'csproj') }">
+                  <echo message="building Project file" />
+                  <exec program="${MSBuildPath}">
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=${build.configuration}" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </exec>
+                </if>
+              </if>
+              <if test="${build.tool != 'MsBuildDirect'}">
+                <echo message="not ms build direct" />
+                <echo message="${filename}" />
+                <if test="${string::ends-with(var1, 'sln') or  string::ends-with(var1, 'csproj')}">
+                  <echo message="${filename}" />
+                  <echo message="inside cs Prof file" />
+                  <msbuild>
+                    <arg value="${filename}" />
+                    <arg value="/property:Configuration=release" />
+                    <arg value="/t:rebuild" />
+                    <arg value="/flp:logfile=${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+                  </msbuild>
+                </if>
+              </if>
+            </foreach>
+          </if>
+        </if>
+      </if>
+    </if>
+  </target>
+  <target name="buildsolutionrelease">
+    <echo message="inside build" />
+    <foreach property="filename" item="File" in="${workingDirectory}">
+      <property name="var1" value="${filename}" />
+      <if test="${build.tool == 'MsBuildDirect'}">
+        <if test="${string::ends-with(var1, 'sln')}">
+          <echo message="${filename}" />
+          <echo message="sln building " />
+          <echo message="${filename} " />
+          <exec program="${MSBuildPath}">
+            <arg value="${filename}" />
+            <arg value="/property:Configuration=${build.configuration}" />
+            <arg value="/flp:logfile=${build.logFilePath}/${build.logFileName}" />
+          </exec>
+        </if>
+        <if test="${string::ends-with(var1, 'csproj') }">
+          <exec program="${MSBuildPath}">
+            <arg value="${filename}" />
+            <arg value="/t:rebuild" />
+            <arg value="/property:Configuration=release" />
+            <arg value="/flp:logfile=${build.logFilePath}/${build.logFileName}" />
+          </exec>
+        </if>
+      </if>
+      <if test="${build.tool != 'MsBuildDirect'}">
+        <echo message="not ms build direct" />
+        <echo message="${filename}" />
+        <if test="${string::ends-with(var1, 'sln') or  string::ends-with(var1, 'csproj')}">
+          <echo message="${filename}" />
+          <echo message="inside cs Prof file" />
+          <msbuild>
+            <arg value="${filename}" />
+            <arg value="/property:Configuration=release" />
+            <arg value="/t:rebuild" />
+            <arg value="/flp:logfile=${build.logFilePath}/${build.logFileName}" />
+          </msbuild>
+        </if>
+      </if>
+    </foreach>
+  </target>
+  <target name="clean">
+    <if test="${property::exists('unittestcase.type')}">
+      <if test="${unittestcase.type != 'nunit'}">
+        <property name="build.UnitTestCaseResultFileName" value="${project::get-name()+ 'UnitTestCaseResult.trx'}" />
+      </if>
+    </if>
+    <if test="${property::exists('deploy.onbuild')}">
+      <if test="${deploy.onbuild == 'true'}">
+        <property name="deploy.oncheckin" value="true" />
+      </if>
+    </if>
+    <if test="${property::exists('notification.successemailneededforProject')}">
+      <if test="${notification.successemailneededforProject == 'false'}">
+        <property name="notification.successemailneeded" value="false" />
+      </if>
+    </if>
+    <if test="${property::exists('unittestcase.forprojectneeded')}">
+      <if test="${unittestcase.forprojectneeded == 'false'}">
+        <property name="unittestcase.needed" value="false" />
+      </if>
+    </if>
+    <delete dir="${build.logFilePath}" if="${directory::exists(build.logFilePath)}" />
+    <echo message="Folder Exsist" />
+    <echo message="${build.logFilePath}" />
+    <echo message="data deleted" />
+    <echo message="cleane" />
+    <echo message="${build.logFilePath}" />
+    <mkdir dir="${build.logFilePath}" />
+  </target>
+  <target name="unittestcase" depends="buildUnitTestProject">
+    <if test="${unittestcase.needed == 'true'}">
+      <if test="${unittestcase.type=='nunit'}">
+        <echo message="n unit tets case " />
+        <exec program="${unit.test.filepath}">
+          <arg value="${unit.test.dllpath}" />
+          <arg value="/work:${build.logFilePath}" />
+          <arg value="/result:${build.UnitTestCaseResultFileName}" />
+        </exec>
+      </if>
+      <if test="${unittestcase.type!='nunit'}">
+        <echo message="c# unit tets case " />
+        <echo message="in unit test part" />
+        <exec program="${unit.test.filepath}">
+          <arg value="/testcontainer:${unit.test.dllpath}" />
+          <arg value="/resultsfile:${build.logFilePath}/${build.UnitTestCaseResultFileName}" />
+        </exec>
+      </if>
+    </if>
+  </target>
+  <target name="deploy">
+    <if test="${deploy.oncheckin == 'true'}">
+      <echo message="Hello inside deploy" />
+      <if test="${deploy.isdeployneeded == 'true'}">
+        <if test="${deploy.deletecurrentfolder == 'true'}">
+          <echo message="delete folder" />
+          <delete dir="${deploy.deployementfolderpath}" if="${directory::exists(deploy.deployementfolderpath)}" />
+          <mkdir dir="${deploy.deployementfolderpath}" />
+          <property name="foldername" value="${deploy.deployementfolderpath}" />
+        </if>
+        <if test="${deploy.createnewfolderanddeploy !='true'}">
+          <echo message="not new folder" />
+          <echo message="trying to copy" />
+          <call target="deploypart" />
+        </if>
+        <if test="${deploy.createnewfolderanddeploy =='true'}">
+          <tstamp>
+            <formatter property="TODAY_SHORT" pattern="yyyy-MM-dd HHmm" />
+          </tstamp>
+          <property name="foldername" value="${deploy.deployementfolderpath}\${project::get-name() +'-'+  TODAY_SHORT}" />
+        </if>
+        <if test="${deploy.createnewfolderanddeploy =='true'}">
+          <echo message="inside new " />
+          <mkdir dir="${deploy.deployementfolderpath}\${project::get-name() +'-'+  TODAY_SHORT}" />
+          <call target="deploypart" />
+        </if>
+      </if>
+    </if>
+    <echo message="${deploy.oncheckin}" />
+  </target>
+  <target name="deploypart">
+    <if test="${TypeofApplication=='console'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory} ">
+          <include name="**/*" />
+          <exclude name="**/${build.logFileName}" />
+          <exclude name="**/${build.UnitTestCaselogFileName}" />
+          <exclude name="**/${build.logFilePath}" />
+          <exclude name="${build.logFilePath}" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="\**\Debug" />
+          <exclude name="**/*.log" />
+          <exclude name="**/*.xel" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='classlibrary'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory} ">
+          <include name="**/*" />
+          <exclude name="**/*.xel" />
+          <exclude name="**/*.log" />
+          <exclude name="\**\Debug" />
+          <exclude name="\**\obj\" />
+          <exclude name="**/*.pfx" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/App.config" />
+          <exclude name="**/packages.config" />
+          <exclude name="${build.logFilePath}" />
+          <exclude name="**/${build.logFilePath}" />
+          <exclude name="**/${build.UnitTestCaselogFileName}" />
+          <exclude name="**/${build.logFileName}" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='unittestproject'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory} ">
+          <include name="**/*" />
+          <exclude name="**/${build.logFileName}" />
+          <exclude name="**/${build.UnitTestCaselogFileName}" />
+          <exclude name="**/${build.logFilePath}" />
+          <exclude name="${build.logFilePath}" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="\**\Debug" />
+          <exclude name="**/*.log" />
+          <exclude name="**/*.xel" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='windowsservice'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory}">
+          <include name="**/*" />
+          <exclude name="SampleWebsite-BuildLog/**" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="**/*.log" />
+          <exclude name="\**\bin\Debug" />
+          <exclude name="**/*.xel" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='wpf'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory}">
+          <include name="**/*" />
+          <exclude name="SampleWebsite-BuildLog/**" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="**/*.log" />
+          <exclude name="\**\bin\Debug" />
+          <exclude name="**/*.xel" />
+          <exclude name="**/*.xaml" />
+          <exclude name="**/*.xaml.cs" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='web'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory}">
+          <include name="**/*" />
+          <exclude name="obj/**" />
+          <exclude name="**/*.debug.css" />
+          <exclude name="**/*.debug.js" />
+          <exclude name="**/*.debug.config" />
+          <exclude name="**/*.release.config" />
+          <exclude name="obj/**" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.cs" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='webservice'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory}">
+          <include name="**/*" />
+          <exclude name="deploy/**" />
+          <exclude name="obj/**" />
+          <exclude name="**/*.debug.css" />
+          <exclude name="**/*.debug.js" />
+          <exclude name="**/*.debug.config" />
+          <exclude name="**/*.release.config" />
+          <exclude name="obj/**" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.cs" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='wcf'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory}">
+          <include name="**/*" />
+          <exclude name="deploy/**" />
+          <exclude name="obj/**" />
+          <exclude name="**/*.debug.css" />
+          <exclude name="**/*.debug.js" />
+          <exclude name="**/*.debug.config" />
+          <exclude name="**/*.release.config" />
+          <exclude name="obj/**" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.cs" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='classlibrary'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory} ">
+          <include name="**/*" />
+          <exclude name="**/${build.logFileName}" />
+          <exclude name="**/${build.UnitTestCaselogFileName}" />
+          <exclude name="**/${build.logFilePath}" />
+          <exclude name="${build.logFilePath}" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="\**\Debug" />
+          <exclude name="**/*.log" />
+          <exclude name="**/*.xel" />
+        </fileset>
+      </copy>
+    </if>
+    <if test="${TypeofApplication=='unittestproject'}">
+      <copy todir="${foldername}" includeemptydirs="false" overwrite="true">
+        <fileset basedir="${workingDirectory} ">
+          <include name="**/*" />
+          <exclude name="**/${build.logFileName}" />
+          <exclude name="**/${build.UnitTestCaselogFileName}" />
+          <exclude name="**/${build.logFilePath}" />
+          <exclude name="${build.logFilePath}" />
+          <exclude name="**/packages.config" />
+          <exclude name="**/App.config" />
+          <exclude name="**/*.sln" />
+          <exclude name="**/*.Build" />
+          <exclude name="**/*.pdb" />
+          <exclude name="**/*.vshost.exe" />
+          <exclude name="**/*.exe.manifest" />
+          <exclude name="**/*.dll.xml" />
+          <exclude name="**/*.csproj" />
+          <exclude name="**/*.csproj.user" />
+          <exclude name="**/*.suo" />
+          <exclude name="**/*.cs" />
+          <exclude name="**/*.pfx" />
+          <exclude name="\**\obj\" />
+          <exclude name="\**\Debug" />
+          <exclude name="**/*.log" />
+          <exclude name="**/*.xel" />
+        </fileset>
+      </copy>
+    </if>
+  </target>
+  <target name="success">
+    <if test="${notification.successemailneeded=='true'}">
+      <call target="mail" />
+    </if>
+    <echo message="in success part" />
+    <property name="Message" value="Hi Team,&lt;br&gt;The last Build triggered by CCNET for    the Project :  ${project::get-name()}  :is Success&lt;br&gt;Build Level : Project Level &lt;br&gt;Project Name :   ${project::get-name()}&lt;br&gt;Last Build Time : :${datetime::now()}&lt;br&gt;Status of Build :Success&lt;br&gt;Server Name :${ environment::get-machine-name()}&lt;br&gt;File path : ${directory::get-current-directory()} :(** server)&lt;br&gt;* * This is an Auto Generated email, please don’t reply to this email.****" />
+  </target>
+  <target name="failure">
+    <echo message="in failure part" />
+    <property name="Message" value="Hi Team,&lt;br&gt;The last Build triggered by CCNET  for   the Project :  ${project::get-name()}  :is Failure&lt;br&gt; Build Level : Project Level &lt;br&gt;Project Name :   ${project::get-name()}&lt;br&gt;Last Build Time : :${datetime::now()}&lt;br&gt;Status of Build :Failure&lt;br&gt;Server Name :${ environment::get-machine-name()}&lt;br&gt;File path : ${directory::get-current-directory()} :(** server)&lt;br&gt;* * This is an Auto Generated email, please don’t reply to this email.****" />
+    <call target="mail" />
+  </target>
+  <target name="mail">
+    <echo message="Build completed, mail sent with reports. " />
+    <mail from="${MailLogger.from}" tolist="${MailLogger.failure.to}" subject="Build Result for the last Build for App:${project::get-name()}" mailhost="${MailLogger.mailhost}" message="${Message}" mailport="${MailLogger.mailport}" isbodyhtml="true">
+      <attachments>
+        <include name="${build.logFilePath}/${build.logFileName}" />
+        <include name="${build.logFilePath}/${build.UnitTestCaseResultFileName}" />
+        <include name="${build.logFilePath}/${build.UnitTestCaselogFileName}" />
+      </attachments>
+    </mail>
+  </target>
+</project>

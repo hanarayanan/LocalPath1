@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
+  <TopNode>[0-1004]C:\POC\SvnRepocitory\SourceControl\WindowsService3\NUnitTestSample\bin\Release\NUnitTestSample.dll</TopNode>
+  <SelectedNode>[0-1004]C:\POC\SvnRepocitory\SourceControl\WindowsService3\NUnitTestSample\bin\Release\NUnitTestSample.dll</SelectedNode>
+  <ExcludeCategories>false</ExcludeCategories>
+  <Nodes>
+    <Node UniqueName="[0-1004]C:\POC\SvnRepocitory\SourceControl\WindowsService3\NUnitTestSample\bin\Release\NUnitTestSample.dll" Expanded="true" />
+    <Node UniqueName="[0-1005]NUnitTest" Expanded="true" />
+    <Node UniqueName="[0-1000]NUnitTest.NUnitTest1" Expanded="true" />
+    <Node UniqueName="[0-1002]NUnitTest.NUnitTest2" Expanded="true" />
+  </Nodes>
+</VisualState>
